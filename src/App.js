@@ -35,7 +35,7 @@ const App = (props) => {
                       path="/photos/:userId"
                       element = {<UserPhotos setContentTopBar={setContentTopBar}/>}
                   />
-                  <Route path="/users" element={<UserList  setContentTopBar={setContentTopBar}/>} />
+                  <Route path="/users" element={<UserList />} />
                 </Routes>
               </Paper>
             </Grid>

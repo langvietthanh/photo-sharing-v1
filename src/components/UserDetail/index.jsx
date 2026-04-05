@@ -1,21 +1,30 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Typography, Button, Box } from "@mui/material";
 import models from "../../modelData/models";
 import "./styles.css";
 import { useParams, Link } from "react-router-dom";
+import fetchModel from "../../lib/fetchModelData";
+
 
 /**
  * Define UserDetail, a React component of Project 4.
  */
 function UserDetail( {setContentTopBar} ) {
     const { userId } = useParams();
-    const userModel = models.userModel(userId);
+    const [userModel, setUserModel] = useState(null);
 
     useEffect(() => {
-        if (userModel) {
-            setContentTopBar(`${userModel.first_name} ${userModel.last_name}`);
-        }
-    }, [userId, userModel, setContentTopBar]);
+        fetchModel(`/user/${userId}`)
+            .then((user) => {
+                setUserModel(user);
+                if (setContentTopBar) {
+                    setContentTopBar(`${user.first_name} ${user.last_name}`);
+                }
+            })
+            .catch((err) => console.log(err));
+    }, [userId, setContentTopBar]);
+
+    if (!userModel) return <Typography>Loading...</Typography>;
 
     return (
         <Box sx={{ p: 2 }}>

@@ -1,30 +1,36 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Typography, Divider, Box } from "@mui/material";
 
 import "./styles.css";
 import {useParams, Link} from "react-router-dom";
-import models from "../../modelData/models";
-
+import fetchModel from "../../lib/fetchModelData";
 /**
  * Define UserPhotos, a React component of Project 4.
  */
 function UserPhotos ({setContentTopBar}) {
     const {userId} = useParams();
-    const userPhotos = models.photoOfUserModel(userId)
+    const [userPhotos, setUserPhotos] = useState([]);
 
     useEffect(() => {
-        const user = models.userModel(userId);
-        if (user) {
-            setContentTopBar(`Photos of ${user.first_name} ${user.last_name}`);
-        }
+      fetchModel(`/photosOfUser/${userId}`)
+      .then(data => setUserPhotos(data))
+      .catch(err => console.log(err))
+    }, [userId]);
+
+
+    useEffect(() => {
+        fetchModel(`/user/${userId}`)
+            .then((user) => {
+                if (setContentTopBar) {
+                    setContentTopBar(`Photos of ${user.first_name} ${user.last_name}`);
+                }
+            })
+            .catch(console.log);
     }, [userId, setContentTopBar]);
 
     return (
     <>
-      {userPhotos &&
-        userPhotos.map( (photo) => <PhotoDetail photo={photo} key={photo._id}/>)
-      } 
-      
+      {userPhotos && userPhotos.map( (photo) => <PhotoDetail photo={photo} key={photo._id}/>)} 
     </>
 
     );
@@ -32,7 +38,6 @@ function UserPhotos ({setContentTopBar}) {
 
 
 function PhotoDetail({photo}){
-  const user = models.userModel(photo.user_id);
   const formattedDate = new Date(photo.date_time).toLocaleString();
 
   return(
@@ -41,14 +46,13 @@ function PhotoDetail({photo}){
         Time upload photo: {formattedDate}
       </Typography>
       <img src={require(`../../images/${photo.file_name}`)} alt={photo.file_name} style={{ maxWidth: "100%", height: "auto", display: "block", marginTop: 8, marginBottom: 8 }}/>
-      <CommentsOfPhoto photoId={photo._id}/>
+      <CommentsOfPhoto comments={photo.comments}/>
       <Divider sx={{ mt: 2 }} />
     </Box>
   )
 }
 
-function CommentsOfPhoto({photoId}){
-  const comments = models.commentOfPhotoModel(photoId)
+function CommentsOfPhoto({comments}){
   return(
     <div>
       {comments && 
